@@ -1,7 +1,3 @@
-/*
- * Swing version.
- */
-
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.*;
@@ -25,40 +21,26 @@ public class RectangleFind extends JApplet{
 
     void buildUI(Container container) {
         container.setLayout(new BoxLayout(container,
-            BoxLayout.Y_AXIS));
-
+                BoxLayout.Y_AXIS));
         label = new JLabel();
-
         polygon = new ConvexHull();
-
         rectangleArea = new RectangleArea(this);
-
         myListener = new MyListener(this);
         rectangleArea.addMouseListener(myListener);
 
         container.add(rectangleArea);
 
         buttonPane = new JPanel();
-        buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.X_AXIS));
-        buttonPane.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
         b2 = new JButton("Максимальный прямоугольник");
         b2.addActionListener(e -> {
             polygon.computeLargestRectangle();
-            rectangleArea.displayedRect = 6;
-            polygon.status = 16;
             rectangleArea.repaint();
         });
 
-        buttonPane.add(Box.createHorizontalStrut(10)); //горизонтальная склейка
         buttonPane.add(b2);
 
         container.add(buttonPane);
-
-        //Выровнивание левых краев компонентов
-        rectangleArea.setAlignmentX(LEFT_ALIGNMENT);
-        label.setAlignmentX(LEFT_ALIGNMENT); //unnecessary, but doesn't hurt
-        buttonPane.setAlignmentX(LEFT_ALIGNMENT);
     }
 
     public static void main(String[] args) {
@@ -90,66 +72,40 @@ class MyListener extends MouseInputAdapter{
 
         if (this.rf.polygon.size() <2){
             this.rf.polygon.add(p);
-            this.rf.polygon.status = 1;
-            this.rf.polygon.changed = true;
         }
-
         else if (this.rf.polygon.size() == 2){
             GeomPoint ha = (GeomPoint)this.rf.polygon.elementAt(0);
             GeomPoint hb = (GeomPoint)this.rf.polygon.elementAt(1);
             if (this.rf.polygon.onLeft(ha, hb, p)){
                 this.rf.polygon.add(p);
-                this.rf.polygon.status = 2;
                 this.rf.polygon.changed = true;
             }
             else{
                 this.rf.polygon.insertElementAt(p, 1);
-                this.rf.polygon.status = 2;
             }
         }
         else{
             if (this.rf.polygon.addPointToHull(p)){
-                this.rf.polygon.status = 2;
+               ;
             }
             else{
-                this.rf.polygon.status = 3;
+                ;
             }
         }
 
         this.rf.rectangleArea.repaint();
-
     }
-
-    public void mouseClicked(MouseEvent e) {
-    }
-
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    public void mouseExited(MouseEvent e) {
-    }
-
-    public void mouseReleased(MouseEvent e) {
-    }
-
 }
 
 
 class RectangleArea extends JPanel {
 
     RectangleFind controller;
-    Dimension preferredSize = new Dimension(600,450);
+    Dimension preferredSize = new Dimension(800,800);
     public int displayedRect = 6;
 
     public RectangleArea(RectangleFind controller) {
         this.controller = controller;
-
-        Border raisedBevel = BorderFactory.createRaisedBevelBorder();
-        Border loweredBevel = BorderFactory.createLoweredBevelBorder();
-        Border compound = BorderFactory.createCompoundBorder
-            (raisedBevel, loweredBevel);
-        setBorder(compound);
-
     }
 
     public Dimension getPreferredSize() {
@@ -171,9 +127,6 @@ class RectangleArea extends JPanel {
             }
 
             point = (GeomPoint)hull.elementAt(i);
-
-            g.setColor(Color.black);
-            g.fillOval(point.x-2, point.y-2, 5, 5);
 
             if(prevPoint != null){
                 g.fillOval(prevPoint.x-2, prevPoint.y-2,5,5);
@@ -236,7 +189,6 @@ class GeomEdge{
 
 class ConvexHull extends Vector {
 
-    int status;
     private int start, stop; //касательные для итеративной выпуклой оболочки
     private int xmin,xmax,ymin,ymax;  //position
     int yxmax; //y coord of xmax
@@ -247,14 +199,7 @@ class ConvexHull extends Vector {
     /* самые большие прямоугольники с углами на AC, BD, ABC, ABD, ACD, BCD */
     Vector RectList;
 
-    /* фиксированное соотношение сторон */
-    private boolean fixed;
-    private int fixedX, fixedY;
-
     public ConvexHull() {
-        this.fixed = false;
-        this.fixedX = 1;
-        this.fixedY = 1;
         RectList = new Vector();
     }
 
@@ -482,17 +427,6 @@ class ConvexHull extends Vector {
                         height = yhi-ylo;
                         width = xright - xi;
 
-                        if (!this.fixed){
-                        }//!fixed
-                        else{
-                            int fixedWidth = (int)Math.ceil( ((double) height*this.fixedX)/((double)this.fixedY));
-                            if (fixedWidth <= width){
-                                width = fixedWidth;
-                            }
-                            else{
-                                width = 0;
-                            }
-                        }
                         area = width * height;
                         //AC
                         if (onA && onC && !onB && !onD){
